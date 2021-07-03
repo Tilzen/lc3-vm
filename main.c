@@ -21,17 +21,17 @@ uint16_t memory[UINT16_MAX];
 
 // CPU Registers
 enum {
-  R0 = 0,
-  R1,
-  R2,
-  R3,
-  R4,
-  R5,
-  R6,
-  R7,
-  R_PC,
-  R_COND,
-  R_COUNT
+    R0 = 0,
+    R1,
+    R2,
+    R3,
+    R4,
+    R5,
+    R6,
+    R7,
+    R_PC,
+    R_COND,
+    R_COUNT
 };
 
 uint16_t registers[R_COUNT];
@@ -39,41 +39,40 @@ uint16_t registers[R_COUNT];
 
 // Condition (R_COND) Flags
 enum {
-  FLG_POS = 1 << 0,
-  FLG_ZRO = 1 << 1,
-  FLG_NEG = 1 << 2,
+    FLG_POS = 1 << 0,
+    FLG_ZRO = 1 << 1,
+    FLG_NEG = 1 << 2,
 };
 
 
 // Opcodes
 enum {
-  OP_BR = 0, // branch
-  OP_ADD,    // add
-  OP_LD,     // load
-  OP_ST,     // store
-  OP_JSR,    // jump register
-  OP_AND,    // bitwise and
-  OP_LDR,    // load register
-  OP_STR,    // store register
-  OP_RTI,    // unused
-  OP_NOT,    // bitwise not
-  OP_LDI,    // load indirect
-  OP_STI,    // store indirect
-  OP_JMP,    // jump
-  OP_RES,    // reserved (unused)
-  OP_LEA,    // load effective address
-  OP_TRAP    // execute trap
+    OP_BR = 0, // branch
+    OP_ADD,    // add
+    OP_LD,     // load
+    OP_ST,     // store
+    OP_JSR,    // jump register
+    OP_AND,    // bitwise and
+    OP_LDR,    // load register
+    OP_STR,    // store register
+    OP_RTI,    // unused
+    OP_NOT,    // bitwise not
+    OP_LDI,    // load indirect
+    OP_STI,    // store indirect
+    OP_JMP,    // jump
+    OP_RES,    // reserved (unused)
+    OP_LEA,    // load effective address
+    OP_TRAP    // execute trap
 };
 
 
 // Trap Routines
-enum
-{
+enum {
     TRAP_GETC  = 0x20,  // get character from keyboard, not echoed onto the terminal
-    TRAP_OUT   = 0x21,   // output a character
+    TRAP_OUT   = 0x21,  // output a character
     TRAP_PUTS  = 0x22,  // output a word string
-    TRAP_IN    = 0x23,    // get character from keyboard, echoed onto the terminal
-    TRAP_PUTSP = 0x24, // output a byte string
+    TRAP_IN    = 0x23,  // get character from keyboard, echoed onto the terminal
+    TRAP_PUTSP = 0x24,  // output a byte string
     TRAP_HALT  = 0x25   // halt the program
 };
 
@@ -203,16 +202,16 @@ void update_flags(uint16_t register_) {
 }
 
 
-void add(uint16_t *instruction) {
-    uint16_t register0      = (*instruction >> 9) & 0x7; // DR
-    uint16_t register1      = (*instruction >> 6) & 0x7; // SR1
-    uint16_t immediate_flag = (*instruction >> 5) & 0x1;
+void add(uint16_t instruction) {
+    uint16_t register0      = (instruction >> 9) & 0x7; // DR
+    uint16_t register1      = (instruction >> 6) & 0x7; // SR1
+    uint16_t immediate_flag = (instruction >> 5) & 0x1;
 
     if (immediate_flag) {
-        uint16_t imm5 = sign_extend(*instruction & 0x1F, 5);
+        uint16_t imm5        = sign_extend(instruction & 0x1F, 5);
         registers[register0] = registers[register1] + imm5;
     } else {
-        uint16_t register2 = *instruction & 0x7;
+        uint16_t register2   = instruction & 0x7;
         registers[register0] = registers[register1] + registers[register2];
     }
 
@@ -220,26 +219,26 @@ void add(uint16_t *instruction) {
 }
 
 
-void ldi(uint16_t *instruction) {
-    uint16_t register0 = (*instruction >> 9) & 0x7;            // DR
-    uint16_t pc_offset = sign_extend(*instruction & 0x1FF, 9); // PC offset 9
+void ldi(uint16_t instruction) {
+    uint16_t register0 = (instruction >> 9) & 0x7;            // DR
+    uint16_t pc_offset = sign_extend(instruction & 0x1FF, 9); // PC offset 9
 
     registers[register0] = mem_read(mem_read(registers[R_PC] + pc_offset));
     update_flags(register0);
 }
 
 
-void and(uint16_t *instruction) {
-    uint16_t register0      = (*instruction >> 9) & 0x7;
-    uint16_t register1      = (*instruction >> 6) & 0x7;
-    uint16_t immediate_flag = (*instruction >> 5) & 0x1;
+void and(uint16_t instruction) {
+    uint16_t register0      = (instruction >> 9) & 0x7;
+    uint16_t register1      = (instruction >> 6) & 0x7;
+    uint16_t immediate_flag = (instruction >> 5) & 0x1;
 
     if (immediate_flag) {
-        uint16_t imm5 = sign_extend(*instruction & 0x1F, 5);
+        uint16_t imm5        = sign_extend(instruction & 0x1F, 5);
         registers[register0] = registers[register1] & imm5;
     }
     else {
-        uint16_t register2 = *instruction & 0x7;
+        uint16_t register2   = instruction & 0x7;
         registers[register0] = registers[register1] & registers[register2];
     }
 
@@ -247,18 +246,18 @@ void and(uint16_t *instruction) {
 }
 
 
-void not(uint16_t *instruction) {
-    uint16_t register0 = (*instruction >> 9) & 0x7;
-    uint16_t register1 = (*instruction >> 6) & 0x7;
+void not(uint16_t instruction) {
+    uint16_t register0 = (instruction >> 9) & 0x7;
+    uint16_t register1 = (instruction >> 6) & 0x7;
 
     registers[register0] = ~registers[register1];
     update_flags(register0);
 }
 
 
-void br(uint16_t *instruction) {
-    uint16_t pc_offset = sign_extend(*instruction & 0x1FF, 9);
-    uint16_t cond_flag = (*instruction >> 9) & 0x7;
+void br(uint16_t instruction) {
+    uint16_t pc_offset = sign_extend(instruction & 0x1FF, 9);
+    uint16_t cond_flag = (instruction >> 9) & 0x7;
 
     if (cond_flag & registers[R_COND]) {
         registers[R_PC] += pc_offset;
@@ -266,75 +265,75 @@ void br(uint16_t *instruction) {
 }
 
 
-void jmp(uint16_t *instruction) {
-    uint16_t register1 = (*instruction >> 6) & 0x7;
+void jmp(uint16_t instruction) {
+    uint16_t register1 = (instruction >> 6) & 0x7;
     registers[R_PC]    = registers[register1];
 }
 
 
-void jsr(uint16_t *instruction) {
-    uint16_t long_flag = (*instruction >> 11) & 1;
+void jsr(uint16_t instruction) {
+    uint16_t long_flag = (instruction >> 11) & 1;
     registers[R7] = registers[R_PC];
 
     if (long_flag) {
-        uint16_t long_pc_offset = sign_extend(*instruction & 0x7FF, 11);
+        uint16_t long_pc_offset = sign_extend(instruction & 0x7FF, 11);
         registers[R_PC] += long_pc_offset; // JSR
     }
     else {
-        uint16_t register1 = (*instruction >> 6) & 0x7;
+        uint16_t register1 = (instruction >> 6) & 0x7;
         registers[R_PC] = registers[register1]; // JSRR
     }
 }
 
 
-void ld(uint16_t *instruction) {
-    uint16_t register0 = (*instruction >> 9) & 0x7;
-    uint16_t pc_offset = sign_extend(*instruction & 0x1FF, 9);
+void ld(uint16_t instruction) {
+    uint16_t register0 = (instruction >> 9) & 0x7;
+    uint16_t pc_offset = sign_extend(instruction & 0x1FF, 9);
 
     registers[register0] = mem_read(registers[R_PC] + pc_offset);
     update_flags(register0);
 }
 
 
-void ldr(uint16_t *instruction) {
-    uint16_t register0 = (*instruction >> 9) & 0x7;
-    uint16_t register1 = (*instruction >> 6) & 0x7;
-    uint16_t offset = sign_extend(*instruction & 0x3F, 6);
+void ldr(uint16_t instruction) {
+    uint16_t register0 = (instruction >> 9) & 0x7;
+    uint16_t register1 = (instruction >> 6) & 0x7;
+    uint16_t offset = sign_extend(instruction & 0x3F, 6);
 
     registers[register0] = mem_read(registers[register1] + offset);
     update_flags(register0);
 }
 
 
-void lea(uint16_t *instruction) {
-    uint16_t register0 = (*instruction >> 9) & 0x7;
-    uint16_t pc_offset = sign_extend(*instruction & 0x1FF, 9);
+void lea(uint16_t instruction) {
+    uint16_t register0 = (instruction >> 9) & 0x7;
+    uint16_t pc_offset = sign_extend(instruction & 0x1FF, 9);
 
     registers[register0] = registers[R_PC] + pc_offset;
     update_flags(register0);
 }
 
 
-void st(uint16_t *instruction) {
-    uint16_t register0 = (*instruction >> 9) & 0x7;
-    uint16_t pc_offset = sign_extend(*instruction & 0x1FF, 9);
+void st(uint16_t instruction) {
+    uint16_t register0 = (instruction >> 9) & 0x7;
+    uint16_t pc_offset = sign_extend(instruction & 0x1FF, 9);
 
     mem_write(registers[R_PC] + pc_offset, registers[register0]);
 }
 
 
-void sti(uint16_t *instruction) {
-    uint16_t register0 = (*instruction >> 9) & 0x7;
-    uint16_t pc_offset = sign_extend(*instruction & 0x1FF, 9);
+void sti(uint16_t instruction) {
+    uint16_t register0 = (instruction >> 9) & 0x7;
+    uint16_t pc_offset = sign_extend(instruction & 0x1FF, 9);
 
     mem_write(mem_read(registers[R_PC] + pc_offset), registers[register0]);
 }
 
 
-void str(uint16_t *instruction) {
-    uint16_t register0 = (*instruction >> 9) & 0x7;
-    uint16_t register1 = (*instruction >> 6) & 0x7;
-    uint16_t offset = sign_extend(*instruction & 0x3F, 6);
+void str(uint16_t instruction) {
+    uint16_t register0 = (instruction >> 9) & 0x7;
+    uint16_t register1 = (instruction >> 6) & 0x7;
+    uint16_t offset = sign_extend(instruction & 0x3F, 6);
 
     mem_write(registers[register1] + offset, registers[register0]);
 }
@@ -398,8 +397,8 @@ void halt(bool **running) {
 }
 
 
-void trap(uint16_t *instruction, bool *running) {
-    switch (*instruction & 0xFF) {
+void trap(uint16_t instruction, bool *running) {
+    switch (instruction & 0xFF) {
         case TRAP_GETC:
             trap_getc();
             break;
@@ -448,46 +447,46 @@ int main(int argc, const char *argv[]) {
 
         switch (opcode) {
             case OP_ADD:
-                add(&instruction);
+                add(instruction);
                 break;
             case OP_AND:
-                and(&instruction);
+                and(instruction);
                 break;
             case OP_NOT:
-                not(&instruction);
+                not(instruction);
                 break;
             case OP_BR:
-                br(&instruction);
+                br(instruction);
                 break;
             case OP_JMP:
-                jmp(&instruction);
+                jmp(instruction);
                 break;
             case OP_JSR:
-                jsr(&instruction);
+                jsr(instruction);
                 break;
             case OP_LD:
-                ld(&instruction);
+                ld(instruction);
                 break;
             case OP_LDI:
-                ldi(&instruction);
+                ldi(instruction);
                 break;
             case OP_LDR:
-                ldr(&instruction);
+                ldr(instruction);
                 break;
             case OP_LEA:
-                lea(&instruction);
+                lea(instruction);
                 break;
             case OP_ST:
-                st(&instruction);
+                st(instruction);
                 break;
             case OP_STI:
-                sti(&instruction);
+                sti(instruction);
                 break;
             case OP_STR:
-                str(&instruction);
+                str(instruction);
                 break;
             case OP_TRAP:
-                trap(&instruction, &running);
+                trap(instruction, &running);
                 break;
             case OP_RES:
                 abort();
